@@ -1,0 +1,9 @@
+{
+  "version": "25.12.31",
+  "name": "test",
+  "description": "这是一个用于测试的训练。",
+  "problems": [
+    "P1001",
+    "P1002"
+  ]
+}

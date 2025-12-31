@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习助手 - 初中学习平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .exercise-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exercise-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .exercise-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+
+        .exercise-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .exercise-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .exercise-desc {
+            font-size: 0.9em;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        
+        .training-card {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .training-problems {
+            margin-top: 10px;
+            font-size: 0.85em;
+            opacity: 0.95;
+        }
+        
+        .training-problem {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin: 3px;
+            font-size: 0.8em;
+        }
+
+        .math { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .english { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .chinese { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .science { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .history { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .geography { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: white;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .exercises-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 I Love Learning</h1>
+            <p class="subtitle">TODO: #1 BusySheng 添加鸡汤内容</p>
+        </header>
+
+        <div class="main-content">
+            <h2 style="text-align: center; color: #333; margin-bottom: 30px;">选择您想练习的科目</h2>
+
+            <div class="exercises-grid">
+                <!-- 动态加载的训练 -->
+                {% for training in trainings %}
+                <div class="exercise-card training-card" onclick="location.href='/problem/{{ training.problems[0] if training.problems else none }}';">
+                    <div class="exercise-icon">📋</div>
+                    <h3 class="exercise-title">{{ training.name }}</h3>
+                    <p class="exercise-desc">{{ training.description }}</p>
+                    {% if training.problems %}
+                    <div class="training-problems">
+                        <strong>包含题目:</strong>
+                        {% for problem in training.problems %}
+                            <span class="training-problem">{{ problem }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                <!-- 如果没有动态加载的训练，显示默认选项 -->
+                {% if not trainings %}
+                <div class="exercise-card math" onclick="location.href='#';">
+                    <div class="exercise-icon">🔢</div>
+                    <h3 class="exercise-title">数学练习</h3>
+                    <p class="exercise-desc">代数、几何、函数等练习题，提升数学思维能力</p>
+                </div>
+
+                <div class="exercise-card english" onclick="location.href='#';">
+                    <div class="exercise-icon">🔤</div>
+                    <h3 class="exercise-title">英语练习</h3>
+                    <p class="exercise-desc">词汇、语法、阅读理解，全方位提升英语水平</p>
+                </div>
+
+                <div class="exercise-card chinese" onclick="location.href='#';">
+                    <div class="exercise-icon">📖</div>
+                    <h3 class="exercise-title">语文练习</h3>
+                    <p class="exercise-desc">古诗词、文言文、作文指导，提升文学素养</p>
+                </div>
+
+                <div class="exercise-card science" onclick="location.href='#';">
+                    <div class="exercise-icon">🔬</div>
+                    <h3 class="exercise-title">科学练习</h3>
+                    <p class="exercise-desc">物理、化学、生物知识点练习，探索科学奥秘</p>
+                </div>
+
+                <div class="exercise-card history" onclick="location.href='#';">
+                    <div class="exercise-icon">🏛️</div>
+                    <h3 class="exercise-title">历史练习</h3>
+                    <p class="exercise-desc">中外历史知识测试，了解人类文明发展</p>
+                </div>
+
+                <div class="exercise-card geography" onclick="location.href='#';">
+                    <div class="exercise-icon">🌍</div>
+                    <h3 class="exercise-title">地理练习</h3>
+                    <p class="exercise-desc">世界地理、中国地理练习，认识我们美丽的地球</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 BusySheng 学习变得更有趣</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "version": "25.12.31",
+  "name": "测试题目",
+  "type": "choice",
+  "description": "测试题目",
+  "text": "本题正确答案是A",
+  "options": [
+    {
+      "choice": "A",
+      "text": "这是正确答案。"
+    },
+    {
+      "choice": "B",
+      "text": "这是错误确答案。"
+    },
+    {
+      "choice": "C",
+      "text": "这是错误答案。"
+    },
+    {
+      "choice": "D",
+      "text": "这是错误答案。"
+    }
+  ],
+  "answer": [
+    0
+  ]
+}
