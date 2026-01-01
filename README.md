@@ -283,6 +283,170 @@ sudo supervisorctl restart ilovelearning
 - 定期审查访问日志
 - 保持系统和软件包更新
 
+## Debian 12.12 + 宝塔面板部署指南
+
+除了传统的部署方式，你也可以使用宝塔面板来简化部署过程。宝塔面板提供了图形化界面，使得部署、配置和管理变得更加直观和便捷。
+
+### 1. 安装宝塔面板
+
+首先，在Debian系统上安装宝塔面板：
+
+```bash
+# 更新系统包
+sudo apt update
+
+# 安装宝塔面板
+wget -O install.sh https://download.bt.cn/install/install-ubuntu_6.0.sh
+sudo bash install.sh ed84842
+```
+
+安装完成后，系统会显示宝塔面板的访问地址、用户名和密码，请妥善保存这些信息。
+
+### 2. 配置宝塔面板
+
+1. 使用浏览器访问宝塔面板地址（通常是 `http://服务器IP:8888`）
+2. 使用提供的用户名和密码登录
+3. 在面板中安装以下软件：
+   - Nginx
+   - Python项目管理器
+   - PM2（用于进程管理，如果可用）
+
+### 3. 配置Python项目
+
+1. 在宝塔面板左侧菜单中找到“软件商店”
+2. 搜索并安装“Python项目管理器”
+3. 安装完成后，在左侧菜单中点击“Python项目”
+4. 点击“添加部署项目”
+
+### 4. 部署ILoveLearning项目
+
+1. 在“添加部署项目”页面中：
+   - 项目名称：ILoveLearning
+   - 项目路径：`/www/wwwroot/ilovelearning`
+   - Python版本：选择Python 3.8或更高版本
+   - 项目类型：选择“Flask应用”
+   - 项目文件：`app.py`
+   - 端口：8000（或任意可用端口）
+
+2. 点击“提交”开始创建项目
+
+### 5. 获取项目代码
+
+在服务器上使用SSH执行以下命令：
+
+```bash
+# 创建项目目录
+sudo mkdir -p /www/wwwroot/ilovelearning
+sudo chown -R www:www /www/wwwroot/ilovelearning
+
+cd /www/wwwroot/ilovelearning
+
+git clone https://github.com/BusyMitten/ILoveLearning.git .
+```
+
+### 6. 配置虚拟环境和依赖
+
+在宝塔面板的Python项目管理中：
+
+1. 进入ILoveLearning项目的管理页面
+2. 点击“虚拟环境”选项卡
+3. 创建新的虚拟环境
+4. 在终端或项目管理界面中安装依赖：
+
+```bash
+cd /www/wwwroot/ilovelearning
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 7. 配置Gunicorn
+
+1. 在项目管理页面中，编辑Gunicorn配置
+2. 将配置文件设置为：
+
+```
+bind = "127.0.0.1:8000"
+workers = 4
+worker_class = "sync"
+timeout = 30
+max_requests = 1000
+max_requests_jitter = 100
+preload_app = True
+```
+
+### 8. 配置Nginx反向代理
+
+1. 在宝塔面板左侧菜单中点击“网站”
+2. 点击“添加站点”
+3. 填写以下信息：
+   - 域名：你的域名
+   - FTP：否
+   - 数据库：否
+   - 程序类型：纯静态
+4. 点击“提交”
+
+5. 点击新创建的站点名称，进入站点设置
+6. 在左侧菜单中点击“反向代理”
+7. 点击“添加反向代理”
+8. 配置如下：
+   - 代理名称：ILoveLearning
+   - 目标URL：`http://127.0.0.1:8000`
+   - 发送域名：留空
+9. 点击“提交”
+
+### 9. 配置SSL证书
+
+1. 在站点设置中，点击“SSL”菜单
+2. 选择“Let's Encrypt”选项卡
+3. 点击“申请”按钮
+4. 填写邮箱地址并勾选同意条款
+5. 等待证书申请完成
+
+### 10. 配置自动续期
+
+宝塔面板会自动处理Let's Encrypt证书的续期，但你可以确认设置：
+
+1. 在宝塔面板左侧菜单中点击“计划任务”
+2. 确保有Let's Encrypt证书自动续期的任务
+
+### 11. 管理应用
+
+通过宝塔面板，你可以轻松管理应用：
+
+- 启动/停止/重启Python项目
+- 查看应用日志
+- 监控资源使用情况
+- 配置防火墙规则
+- 管理SSL证书
+
+### 12. 备份和恢复
+
+利用宝塔面板的备份功能：
+
+1. 在“计划任务”中设置自动备份
+2. 定期备份项目文件和配置
+3. 使用“备份”功能手动备份重要数据
+
+### 13. 性能优化
+
+在宝塔面板中优化性能：
+
+1. 使用“安全”功能配置防火墙
+2. 在“监控”中查看服务器资源使用情况
+3. 配置Nginx缓存提升性能
+4. 使用“文件”功能优化静态资源
+
+## 宝塔面板部署优势
+
+- 图形化界面，操作直观
+- 一键安装和配置常用软件
+- 内置SSL证书管理
+- 简化的防火墙配置
+- 直观的进程和资源监控
+- 便捷的备份和恢复功能
+
+完成以上步骤后，你的ILoveLearning应用将在Debian 12.12 + 宝塔面板环境下通过HTTPS安全访问。记得将配置文件中的`your-domain.com`替换为你的实际域名。
+
 ---
 
 完成以上步骤后，你的ILoveLearning应用将在Debian服务器上通过HTTPS安全访问。记得将配置文件中的`your-domain.com`替换为你的实际域名。
