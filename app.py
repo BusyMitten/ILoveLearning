@@ -1,7 +1,6 @@
 from flask import Flask, render_template, session, redirect, url_for, jsonify
 from utils import (load_trainings, get_training_by_problem, get_next_problem,
                    load_problem, get_hitokoto, get_project_size, get_question_count, get_last_update_time)
-from wsgiref.simple_server import make_server
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired
@@ -363,5 +362,4 @@ def login():
 
 
 if __name__ == "__main__":
-    httpd = make_server('0.0.0.0', 5000, app)
-    httpd.serve_forever()
+    app.run(host="0.0.0.0",port=5000)
