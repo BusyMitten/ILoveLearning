@@ -138,9 +138,7 @@
         </form>
         {% if data %}
         <div class="result">
-            <p><strong>登录信息：</strong></p>
-            <p>用户名：{{ data['name'] }}</p>
-            <p>密码：{{ data['password'] }}</p>
+            <p>Hello, {{ data['name'] }} !</p>
         </div>
         {% endif %}
         <a href="/" class="back-link">返回首页</a>

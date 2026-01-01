@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session, redirect, url_for, jsonify
 from utils import (load_trainings, get_training_by_problem, get_next_problem,
-                   load_problem, get_hitokoto, get_project_size)
+                   load_problem, get_hitokoto, get_project_size, get_question_count, get_last_update_time)
 from wsgiref.simple_server import make_server
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
@@ -14,7 +14,15 @@ app.secret_key = 'BusySheng'  # 用于会话管理
 def index():
     trainings = load_trainings()
     completed_trainings = session.get('completed_trainings', [])
-    return render_template("index.html", trainings=trainings, completed_trainings=completed_trainings, hitokoto=get_hitokoto())
+    return render_template("index.html", 
+                           trainings=trainings, 
+                           completed_trainings=completed_trainings, 
+                           hitokoto=get_hitokoto(),
+                           version="26.1.1",
+                           author="BusySheng",
+                           project_size=get_project_size(),
+                           question_count=get_question_count(),
+                           last_update=get_last_update_time())
 
 @app.route("/api/hitokoto")
 def api_hitokoto():
@@ -355,5 +363,5 @@ def login():
 
 
 if __name__ == "__main__":
-    httpd = make_server('127.0.0.1', 80, app)
+    httpd = make_server('0.0.0.0', 80, app)
     httpd.serve_forever()

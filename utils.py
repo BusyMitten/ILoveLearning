@@ -95,4 +95,28 @@ def get_project_size():
         for f in filenames:
             fp = os.path.join(dirpath, f)
             total_size += os.path.getsize(fp)
-    return str(total_size / 1024) + "KB"
+    return str(round(total_size / 1024, 2)) + "KB"
+
+def get_question_count():
+    """获取题目总数"""
+    problem_dir = os.path.join(os.path.dirname(__file__), "problem")
+    if os.path.exists(problem_dir):
+        problem_files = [f for f in os.listdir(problem_dir) if f.endswith(".json")]
+        return len(problem_files)
+    return 0
+
+def get_last_update_time():
+    """获取项目最后更新时间"""
+    import datetime
+    project_dir = os.path.dirname(__file__)
+    latest_time = 0
+    
+    for dirpath, dirnames, filenames in os.walk(project_dir):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            mtime = os.path.getmtime(fp)
+            if mtime > latest_time:
+                latest_time = mtime
+                
+    # 转换为可读格式
+    return datetime.datetime.fromtimestamp(latest_time).strftime('%Y-%m-%d %H:%M:%S')

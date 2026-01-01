@@ -1,0 +1,17 @@
+[Unit]
+Description=ILoveLearning Flask Application
+After=network.target
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/ILoveLearning
+Environment=PATH=/var/www/ILoveLearning/venv/bin
+ExecStart=/var/www/ILoveLearning/venv/bin/gunicorn -c gunicorn_config.py app:app
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

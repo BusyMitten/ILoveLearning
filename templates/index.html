@@ -46,6 +46,42 @@
             color: #ffd700;
             transform: scale(1.05);
         }
+        
+        .top-buttons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4192 100%);
+        }
+        
+        .nav-btn i {
+            margin-right: 5px;
+            font-size: 16px;
+        }
 
         .main-content {
             background: white;
@@ -110,6 +146,71 @@
             background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
         }
         
+        /* 关于弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 0;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+        }
+        
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #ffd700;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-body p {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+        
+        .modal-body strong {
+            display: inline-block;
+            width: 100px;
+            color: #667eea;
+        }
+        
         .training-problems {
             margin-top: 10px;
             font-size: 0.85em;
@@ -157,6 +258,14 @@
 <body>
     <div class="container">
         <header>
+            <div class="top-buttons">
+                <a href="/login" class="nav-btn">
+                    <i>🔐</i> 登录
+                </a>
+                <a href="#" onclick="showAbout(); return false;" class="nav-btn">
+                    <i>ℹ️</i> 关于
+                </a>
+            </div>
             <h1>📚 I Love Learning</h1>
             <p class="subtitle" id="hitokoto" onclick="refreshHitokoto()">{{ hitokoto }}</p>
         </header>
@@ -225,8 +334,24 @@
 
         <footer>
             <p>© 2025 BusySheng 学习变得更有趣</p>
-            <p><a href="/login" style="color: #ffd700; text-decoration: none;">登录</a></p>
         </footer>
+        
+        <!-- 关于弹窗 -->
+        <div id="aboutModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>关于 ILoveLearning</h2>
+                    <span class="close" onclick="closeAbout()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p><strong>版本:</strong> {{ version }}</p>
+                    <p><strong>作者:</strong> {{ author }}</p>
+                    <p><strong>项目大小:</strong> {{ project_size }}</p>
+                    <p><strong>题目数量:</strong> {{ question_count }}</p>
+                    <p><strong>最后更新:</strong> {{ last_update }}</p>
+                </div>
+            </div>
+        </div>
         
         <script>
             function refreshHitokoto() {
@@ -244,6 +369,22 @@
                         console.error('获取一言时出错:', error);
                         hitokotoElement.textContent = '{{ hitokoto }}'; // 恢复原内容
                     });
+            }
+            
+            function showAbout() {
+                document.getElementById('aboutModal').style.display = 'block';
+            }
+            
+            function closeAbout() {
+                document.getElementById('aboutModal').style.display = 'none';
+            }
+            
+            // 点击弹窗外部区域关闭弹窗
+            window.onclick = function(event) {
+                const modal = document.getElementById('aboutModal');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
             }
         </script>
     </div>
