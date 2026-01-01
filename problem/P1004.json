@@ -1,0 +1,12 @@
+{
+  "version": "25.12.31",
+  "name": "",
+  "type": "input",
+  "description": "",
+  "text": "淮海战役胜利的时间是？",
+  "inputText": "%s年%s月",
+  "answer": [
+    "1949",
+    "1"
+  ]
+}

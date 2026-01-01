@@ -1,0 +1,9 @@
+{
+  "version": "25.12.31",
+  "name": "八上历史",
+  "description": "History.",
+  "problems": [
+    "P1003",
+    "P1004"
+  ]
+}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>训练完成 - 学习助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .completion-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            color: #28a745;
+        }
+        
+        .completion-title {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .completion-stats {
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            color: #444;
+        }
+        
+        .completion-message {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        
+        .success-message {
+            color: #28a745;
+        }
+        
+        .failure-message {
+            color: #dc3545;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .back-link:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="completion-icon">🏆</div>
+        <h1 class="completion-title">训练完成！</h1>
+        <div class="completion-stats">
+            <p>总题目数：{{ total_problems }}</p>
+            <p>答对题目：{{ correct_answers }}</p>
+            <p>正确率：{{ accuracy }}%</p>
+        </div>
+        {% if passed %}
+            <div class="completion-message success-message">🎉 恭喜你完成了训练！</div>
+        {% else %}
+            <div class="completion-message failure-message">💪 继续努力，下次会更好！</div>
+        {% endif %}
+        <a href="/" class="back-link">返回首页</a>
+    </div>
+</body>
+</html>

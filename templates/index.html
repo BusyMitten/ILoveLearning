@@ -38,6 +38,13 @@
         .subtitle {
             font-size: 1.2em;
             opacity: 0.9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .subtitle:hover {
+            color: #ffd700;
+            transform: scale(1.05);
         }
 
         .main-content {
@@ -151,7 +158,7 @@
     <div class="container">
         <header>
             <h1>📚 I Love Learning</h1>
-            <p class="subtitle">TODO: #1 BusySheng 添加鸡汤内容</p>
+            <p class="subtitle" id="hitokoto" onclick="refreshHitokoto()">{{ hitokoto }}</p>
         </header>
 
         <div class="main-content">
@@ -160,8 +167,8 @@
             <div class="exercises-grid">
                 <!-- 动态加载的训练 -->
                 {% for training in trainings %}
-                <div class="exercise-card training-card" onclick="location.href='/problem/{{ training.problems[0] if training.problems else none }}';">
-                    <div class="exercise-icon">📋</div>
+                <div class="exercise-card training-card" onclick="location.href='/problem/{{ training.problems[0] if training.problems else 'none' }}';">
+                    <div class="exercise-icon">{% if training.name in completed_trainings %}✅{% else %}📋{% endif %}</div>
                     <h3 class="exercise-title">{{ training.name }}</h3>
                     <p class="exercise-desc">{{ training.description }}</p>
                     {% if training.problems %}
@@ -218,7 +225,27 @@
 
         <footer>
             <p>© 2025 BusySheng 学习变得更有趣</p>
+            <p><a href="/login" style="color: #ffd700; text-decoration: none;">登录</a></p>
         </footer>
+        
+        <script>
+            function refreshHitokoto() {
+                // 显示加载状态
+                const hitokotoElement = document.getElementById('hitokoto');
+                hitokotoElement.textContent = '加载中...';
+                
+                // 发送请求获取新的hitokoto
+                fetch('/api/hitokoto')
+                    .then(response => response.json())
+                    .then(data => {
+                        hitokotoElement.textContent = data.hitokoto;
+                    })
+                    .catch(error => {
+                        console.error('获取一言时出错:', error);
+                        hitokotoElement.textContent = '{{ hitokoto }}'; // 恢复原内容
+                    });
+            }
+        </script>
     </div>
 </body>
 </html>

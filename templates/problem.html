@@ -175,6 +175,72 @@
         .back-link:hover {
             transform: translateY(-3px);
         }
+        
+        .completion-page {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .completion-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .completion-title {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .completion-stats {
+            font-size: 1.2em;
+            margin-bottom: 25px;
+        }
+        
+        .completion-message {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        
+        .input-answer {
+            width: 100px;
+            padding: 10px;
+            margin: 0 5px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .input-answer:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .submit-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+            border: none;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+        }
+        
+        .input-container {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -196,23 +262,50 @@
                 {% if problem_data.type == "choice" and problem_data.options %}
                 <div class="options-container">
                     {% for option in problem_data.options %}
-                    <label class="option" onclick="selectOption(this, {{ loop.index0 }})">
+                    <div class="option" onclick="selectOption(this, {{ loop.index0 }})">
                         <span class="option-letter">{{ option.choice }}</span>
                         {{ option.text }}
-                    </label>
+                    </div>
                     {% endfor %}
                 </div>
                 <div class="feedback" id="feedback"></div>
-                <button class="next-btn" id="nextBtn" onclick="nextQuestion()">下一题</button>
+                <button class="next-btn" id="nextBtn" style="display:none;" onclick="nextQuestion()">下一题</button>
                 
                 <script>
                     // 存储正确答案的索引
                     const correctAnswerIndices = {{ problem_data.answer | safe }};
                     let selectedOptionIndex = -1;
+                    let answered = false;
+                    
+                    // 如果已经回答过此题，则显示反馈
+                    {% if 'result' in request.args %}
+                        answered = true;
+                        const feedbackElement = document.getElementById('feedback');
+                        feedbackElement.textContent = '{{ request.args.message | default("") }}';
+                        feedbackElement.className = 'feedback {{ request.args.result }}';
+                        document.getElementById('nextBtn').style.display = 'inline-block';
+                        
+                        // 高亮正确/错误选项
+                        {% if request.args.result == 'correct' %}
+                            document.querySelectorAll('.option')[{{ request.args.selected_option | default(0) }}].classList.add('correct');
+                        {% else %}
+                            // 高亮正确答案
+                            correctAnswerIndices.forEach(index => {
+                                document.querySelectorAll('.option')[index].classList.add('correct');
+                            });
+                            // 高亮错误选项
+                            document.querySelectorAll('.option')[{{ request.args.selected_option | default(0) }}].classList.add('incorrect');
+                        {% endif %}
+                        
+                        // 锁定选项
+                        document.querySelectorAll('.option').forEach(opt => {
+                            opt.style.pointerEvents = 'none';
+                        });
+                    {% endif %}
                     
                     function selectOption(element, index) {
-                        // 如果已经选择了答案，则不能再选择
-                        if (document.querySelector('.feedback').style.display === 'block') {
+                        // 如果已经回答过，则不能再选择
+                        if (answered) {
                             return;
                         }
                         
@@ -225,49 +318,219 @@
                         element.classList.add('selected');
                         selectedOptionIndex = index;
                         
-                        // 检查答案
-                        checkAnswer(index);
+                        // 提交答案
+                        submitAnswer(index);
                     }
                     
-                    function checkAnswer(index) {
-                        const feedbackElement = document.getElementById('feedback');
-                        const nextBtn = document.getElementById('nextBtn');
-                        const options = document.querySelectorAll('.option');
-                        
-                        // 检查选择的答案是否正确
-                        if (correctAnswerIndices.includes(index)) {
-                            // 答对了
-                            feedbackElement.textContent = '✔ 恭喜你答对了！';
-                            feedbackElement.className = 'feedback correct';
+                    function submitAnswer(index) {
+                        // 发送AJAX请求提交答案
+                        fetch('/submit_answer/{{ problem_name }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: 'answer=' + index
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.error) {
+                                // 如果有错误信息
+                                const feedbackElement = document.getElementById('feedback');
+                                feedbackElement.textContent = data.error;
+                                feedbackElement.className = 'feedback incorrect';
+                                feedbackElement.style.display = 'block';
+                                return;
+                            }
                             
-                            // 高亮正确选项
-                            options[index].classList.add('correct');
-                        } else {
-                            // 答错了
-                            feedbackElement.textContent = '❌ 错误！正确答案是：' + getCorrectAnswerText();
-                            feedbackElement.className = 'feedback incorrect';
+                            // 更新反馈信息
+                            const feedbackElement = document.getElementById('feedback');
+                            feedbackElement.textContent = data.message;
+                            feedbackElement.className = 'feedback ' + data.result;
+                            feedbackElement.style.display = 'block';
                             
-                            // 高亮正确答案
-                            correctAnswerIndices.forEach(correctIndex => {
-                                options[correctIndex].classList.add('correct');
+                            // 显示下一题按钮
+                            document.getElementById('nextBtn').style.display = 'inline-block';
+                            
+                            // 高亮正确/错误选项
+                            if (correctAnswerIndices.includes(index)) {
+                                // 答对了，高亮当前选项
+                                document.querySelectorAll('.option')[index].classList.add('correct');
+                            } else {
+                                // 答错了，高亮正确答案
+                                data.correct_indices.forEach(correctIndex => {
+                                    document.querySelectorAll('.option')[correctIndex].classList.add('correct');
+                                });
+                                // 高亮错误选项
+                                document.querySelectorAll('.option')[index].classList.add('incorrect');
+                            }
+                            
+                            // 锁定选项，不能再选择
+                            document.querySelectorAll('.option').forEach(opt => {
+                                opt.style.pointerEvents = 'none';
                             });
                             
-                            // 高亮错误选项
-                            options[index].classList.add('incorrect');
-                        }
-                        
-                        // 显示下一题按钮
-                        nextBtn.classList.add('show');
+                            // 标记为已回答
+                            answered = true;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            // 如果出现错误，显示错误信息
+                            const feedbackElement = document.getElementById('feedback');
+                            feedbackElement.textContent = '提交答案时出现错误，请重试';
+                            feedbackElement.className = 'feedback incorrect';
+                            feedbackElement.style.display = 'block';
+                        });
                     }
                     
-                    function getCorrectAnswerText() {
-                        const options = document.querySelectorAll('.option');
-                        let correctAnswers = [];
-                        correctAnswerIndices.forEach(index => {
-                            const letter = options[index].querySelector('.option-letter').textContent;
-                            correctAnswers.push(letter);
+                    function nextQuestion() {
+                        // 跳转到下一题
+                        window.location.href = '/problem/{{ problem_name }}/next';
+                    }
+                </script>
+                {% elif problem_data.type == "input" %}
+                <div class="input-container">
+                    <div id="question-text">{{ problem_data.text | default('暂无题目内容') }}</div>
+                    <div id="input-fields">
+                        {% if problem_data.inputText %}
+                            {{ problem_data.inputText | default('') }}
+                        {% endif %}
+                    </div>
+                    <button class="submit-btn" onclick="submitInputAnswer()">提交答案</button>
+                </div>
+                <div class="feedback" id="feedback"></div>
+                <button class="next-btn" id="nextBtn" style="display:none;" onclick="nextQuestion()">下一题</button>
+                
+                <script>
+                    let answered = false;
+                    let inputCount = 0;
+                    
+                    // 解析题目文本，查找 %s 占位符并替换为输入框
+                    function parseQuestionText() {
+                        let inputText = '{{ problem_data.inputText | default(problem_data.text) }}';
+                        
+                        // 计算 %s 的数量
+                        const matches = inputText.match(/%s/g);
+                        inputCount = matches ? matches.length : 0;
+                        
+                        if (inputCount > 0) {
+                            // 替换 %s 为输入框
+                            let counter = 1;
+                            const modifiedText = inputText.replace(/%s/g, () => {
+                                return `<input type="text" class="input-answer" id="input-field-${counter}" placeholder="填空${counter++}">`;
+                            });
+                            
+                            document.getElementById('input-fields').innerHTML = modifiedText;
+                        } else {
+                            // 如果没有 %s，使用原始文本并添加一个输入框
+                            let questionText = '{{ problem_data.text | default("暂无题目内容") }}';
+                            document.getElementById('input-fields').innerHTML = '<br><input type="text" class="input-answer" id="input-field-1" placeholder="请输入答案">';
+                            inputCount = 1;
+                        }
+                    }
+                    
+                    // 如果已经回答过此题，则显示反馈
+                    {% if 'result' in request.args %}
+                        answered = true;
+                        const feedbackElement = document.getElementById('feedback');
+                        feedbackElement.textContent = '{{ request.args.message | default("") }}';
+                        feedbackElement.className = 'feedback {{ request.args.result }}';
+                        document.getElementById('nextBtn').style.display = 'inline-block';
+                        
+                        // 禁用输入框和提交按钮
+                        document.querySelectorAll('.input-answer').forEach(input => {
+                            input.disabled = true;
                         });
-                        return correctAnswers.join(', ');
+                        document.querySelector('.submit-btn').disabled = true;
+                    {% endif %}
+                    
+                    // 页面加载时解析题目文本
+                    parseQuestionText();
+                    
+                    function submitInputAnswer() {
+                        if (answered) {
+                            return;
+                        }
+                        
+                        // 收集所有输入框的值
+                        const inputValues = [];
+                        for (let i = 1; i <= inputCount; i++) {
+                            const inputElement = document.getElementById(`input-field-${i}`);
+                            if (inputElement) {
+                                inputValues.push(inputElement.value.trim());
+                            }
+                        }
+                        
+                        // 检查是否有空输入
+                        if (inputValues.some(val => !val)) {
+                            alert('请填写所有空格');
+                            return;
+                        }
+                        
+                        // 发送AJAX请求提交答案
+                        fetch('/submit_answer/{{ problem_name }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: 'answer=' + encodeURIComponent(JSON.stringify(inputValues))
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.error) {
+                                // 如果有错误信息
+                                const feedbackElement = document.getElementById('feedback');
+                                feedbackElement.textContent = data.error;
+                                feedbackElement.className = 'feedback incorrect';
+                                feedbackElement.style.display = 'block';
+                                return;
+                            }
+                            
+                            // 更新反馈信息
+                            const feedbackElement = document.getElementById('feedback');
+                            feedbackElement.textContent = data.message;
+                            feedbackElement.className = 'feedback ' + data.result;
+                            feedbackElement.style.display = 'block';
+                            
+                            // 显示下一题按钮
+                            document.getElementById('nextBtn').style.display = 'inline-block';
+                            
+                            // 禁用输入框和提交按钮
+                            document.querySelectorAll('.input-answer').forEach(input => {
+                                input.disabled = true;
+                            });
+                            document.querySelector('.submit-btn').disabled = true;
+                            
+                            // 标记为已回答
+                            answered = true;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            // 如果出现错误，显示错误信息
+                            const feedbackElement = document.getElementById('feedback');
+                            feedbackElement.textContent = '提交答案时出现错误，请重试';
+                            feedbackElement.className = 'feedback incorrect';
+                            feedbackElement.style.display = 'block';
+                        });
+                    }
+                    
+                    // 允许用户按回车提交答案（对第一个输入框）
+                    const firstInput = document.getElementById('input-field-1');
+                    if (firstInput) {
+                        firstInput.addEventListener('keypress', function(event) {
+                            if (event.key === 'Enter') {
+                                submitInputAnswer();
+                            }
+                        });
                     }
                     
                     function nextQuestion() {
